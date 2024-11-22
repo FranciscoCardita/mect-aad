@@ -75,16 +75,7 @@ static void test_md5_cpu_avx2(void)
       for (idx = 0u; idx < 4u; idx++)   //  for each hash word
         if (interleaved_test_hash[8u * idx + lane] != hth[4u * lane + idx])
         {
-          fprintf(stdout, "Expected hash: %08x %08x %08x %08x\n",
-          hth[8u * lane + 0], hth[8u * lane + 1], hth[8u * lane + 2], hth[8u * lane + 3]);
-          fprintf(stdout, "Computed hash: %08x %08x %08x %08x\n",
-          interleaved_test_hash[8u * 0 + lane], interleaved_test_hash[8u * 1 + lane],
-          interleaved_test_hash[8u * 2 + lane], interleaved_test_hash[8u * 3 + lane]);
-          fprintf(stdout, "interleaved_test_data alignment: %lu\n", ((uintptr_t)interleaved_test_data) % 32);
-          fprintf(stdout, "interleaved_test_hash alignment: %lu\n", ((uintptr_t)interleaved_test_hash) % 32);
-
-          fprintf(stdout, "lane=%u idx=%u\n", lane, idx);
-          fprintf(stderr, "test_md5_cpu_avx2: MD5 hash error for message %u\n", 8u * n + lane);
+          fprintf(stderr, "test_md5_cpu_avx2: MD5 hash error for message %u\n", n + lane);
           exit(1);
         }
     //

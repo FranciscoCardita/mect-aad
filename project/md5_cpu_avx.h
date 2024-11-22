@@ -75,7 +75,7 @@ static void test_md5_cpu_avx(void)
       for(idx = 0u;idx < 4u;idx++)   //  for each hash word
         if(interleaved_test_hash[4u * idx + lane] != hth[4u * lane + idx])
         {
-          fprintf(stderr,"test_md5_cpu_avx: MD5 hash error for message %u\n",4u * n + lane);
+          fprintf(stderr,"test_md5_cpu_avx: MD5 hash error for message %u\n", n + lane);
           exit(1);
         }
     //
