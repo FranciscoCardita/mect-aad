@@ -11,64 +11,60 @@ static void deti_coins_cpu_avx_search(u32_t n_random_words) {
     return;
   }
 
-  u32_t idx, coin[9 * 4u] __attribute__((aligned(16))), hash[4u * 8u];
-  u64_t n_attempts, n_coins;
-  u08_t *bytes[8];
-  u32_t lanes;
+  __attribute__((aligned(32))) u32_t coin[13u * 8u];
+  __attribute__((aligned(32))) u32_t hash[4u * 8u];
+  u64_t n_attempts = 0, n_coins = 0;
+  u32_t lanes, idx;
 
   for (lanes = 0u; lanes < 8u; lanes++) {
-    bytes[lanes] = (u08_t *)&coin[lanes * n_random_words * 4u];
-
-    bytes[lanes][0u] = 'D';
-    bytes[lanes][1u] = 'E';
-    bytes[lanes][2u] = 'T';
-    bytes[lanes][3u] = 'I';
-    bytes[lanes][4u] = ' ';
-    bytes[lanes][5u] = 'c';
-    bytes[lanes][6u] = 'o';
-    bytes[lanes][7u] = 'i';
-    bytes[lanes][8u] = 'n';
-    bytes[lanes][9u] = ' ';
-
-    for (idx = 10u; idx < n_random_words * 4u - 1u; idx++) {
-      bytes[lanes][idx] = ' ';
+    u08_t *bytes = (u08_t *)&coin[13u * lanes];
+    bytes[0u] = 'D';
+    bytes[1u] = 'E';
+    bytes[2u] = 'T';
+    bytes[3u] = 'I';
+    bytes[4u] = ' ';
+    bytes[5u] = 'c';
+    bytes[6u] = 'o';
+    bytes[7u] = 'i';
+    bytes[8u] = 'n';
+    bytes[9u] = ' ';
+    for (idx = 10u; idx < 13u * 4u - 1u; idx++) {
+      bytes[idx] = ' ';
     }
-
-    bytes[lanes][n_random_words * 4u - 1u] = '\n';
+    bytes[13u * 4u - 1u] = '\n'; // Mandatory termination
   }
 
-  n_attempts = n_coins = 0ul;
-
   while (stop_request == 0) {
-    md5_cpu_avx((v4si *)coin, (v4si *)hash);
-
-    for (lanes = 0; lanes < 8; lanes++) {
-      printf("Lane %u: ", lanes);
-      for (idx = 0; idx < n_random_words * 4; idx++) {
-        printf("0x%02X ", bytes[lanes][idx]);
-      }
-      printf("\n");
-    }
+    md5_cpu_avx2((v8hi *)coin, (v8hi *)hash);
 
     for (lanes = 0u; lanes < 8u; lanes++) {
-      if (hash[4u * lanes + 3u] == 0u) {
-        save_deti_coin(&coin[n_random_words * lanes]);
+      printf("Coin %u: Hash = %08x %08x %08x %08x\n", lanes, hash[4u * lanes],
+             hash[4u * lanes + 1u], hash[4u * lanes + 2u],
+             hash[4u * lanes + 3u]);
+    }
+
+    // Check results for each lane
+    for (lanes = 0u; lanes < 8u; lanes++) {
+      // Validate the last 32 bits (hash[3] for each lane)
+      if ((hash[4u * lanes + 3u] & 0xFFFFFFFFu) == 0u) { // Check last word
+        save_deti_coin(&coin[13u * lanes]);
         n_coins++;
       }
     }
 
+    // Increment the random portion of each lane's coin
     for (lanes = 0u; lanes < 8u; lanes++) {
-      for (idx = 10u;
-           idx < n_random_words * 4u - 1u && bytes[lanes][idx] == (u08_t)126;
+      u08_t *bytes = (u08_t *)&coin[13u * lanes];
+      for (idx = 10u; idx < n_random_words * 4u && bytes[idx] == (u08_t)126;
            idx++) {
-        bytes[lanes][idx] = ' ';
+        bytes[idx] = ' '; // Reset to the first character
       }
-      if (idx < n_random_words * 4u - 1u) {
-        bytes[lanes][idx]++;
+      if (idx < n_random_words * 4u) {
+        bytes[idx]++;
       }
     }
 
-    n_attempts += 8ul;
+    n_attempts += 8u; // Increment attempts by 8 (one per lane)
   }
 
   STORE_DETI_COINS();
