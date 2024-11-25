@@ -1,7 +1,7 @@
 #ifndef DETI_COINS_CPU_AVX_SEARCH
 #define DETI_COINS_CPU_AVX_SEARCH
 
-#include "md5_cpu_avx2.h"
+#include "md5_cpu_avx.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -11,12 +11,13 @@ static void deti_coins_cpu_avx_search(u32_t n_random_words) {
     return;
   }
 
-  __attribute__((aligned(32))) u32_t coin[13u * 8u];
-  __attribute__((aligned(32))) u32_t hash[4u * 8u];
-  u64_t n_attempts = 0, n_coins = 0;
+  __attribute__(( aligned(16))) u32_t coin[13u * 4u]; // Interleaved coins for 4 lanes
+  __attribute__((aligned(16))) u32_t hash[4u * 4u]; // Hashes for 4 lanes
+  u64_t n_attempts = 0ul;
+  u64_t n_coins = 0ul;
   u32_t lanes, idx;
 
-  for (lanes = 0u; lanes < 8u; lanes++) {
+  for (lanes = 0u; lanes < 4u; lanes++) {
     u08_t *bytes = (u08_t *)&coin[13u * lanes];
     bytes[0u] = 'D';
     bytes[1u] = 'E';
@@ -28,43 +29,69 @@ static void deti_coins_cpu_avx_search(u32_t n_random_words) {
     bytes[7u] = 'i';
     bytes[8u] = 'n';
     bytes[9u] = ' ';
-    for (idx = 10u; idx < 13u * 4u - 1u; idx++) {
+    bytes[51u] = '\n';
+
+    for (idx = 10u; idx < 10u + n_random_words * 4u; idx++) {
+      bytes[idx] = (u08_t)(32 + lanes);
+    }
+
+    for (; idx < 13u * 4u - 1u; idx++) {
       bytes[idx] = ' ';
     }
-    bytes[13u * 4u - 1u] = '\n'; // Mandatory termination
   }
 
   while (stop_request == 0) {
-    md5_cpu_avx2((v8hi *)coin, (v8hi *)hash);
+    md5_cpu_avx((v4si *)coin, (v4si *)hash);
 
-    for (lanes = 0u; lanes < 8u; lanes++) {
-      printf("Coin %u: Hash = %08x %08x %08x %08x\n", lanes, hash[4u * lanes],
-             hash[4u * lanes + 1u], hash[4u * lanes + 2u],
-             hash[4u * lanes + 3u]);
-    }
+    for (lanes = 0u; lanes < 4u; lanes++) {
+      u32_t *h = &hash[4u * lanes];
+      u32_t *c = &coin[13u * lanes];
 
-    // Check results for each lane
-    for (lanes = 0u; lanes < 8u; lanes++) {
-      // Validate the last 32 bits (hash[3] for each lane)
-      if ((hash[4u * lanes + 3u] & 0xFFFFFFFFu) == 0u) { // Check last word
-        save_deti_coin(&coin[13u * lanes]);
+      if (h[3u] == 0u) {
+        fprintf(stdout,
+                "deti_coins_cpu_avx_search: Found a DETI coin (Lane %u)\n",
+                lanes);
+
+        // ---------DEBUG---------------
+        u08_t *coin_bytes = (u08_t *)c; // Interpret the coin as an array of bytes
+        fprintf(stdout, "Coin (ASCII): \"");
+        for (int i = 0; i < 13u * 4u; i++) {
+          if (coin_bytes[i] >= 32 && coin_bytes[i] <= 126) {
+            fprintf(stdout, "%c", coin_bytes[i]); // Printable ASCII
+          } else {
+            fprintf(stdout, "."); // Non-printable characters as '.'
+          }
+        }
+        fprintf(stdout, "\"\n");
+        // Print the coin as hexadecimal values
+        fprintf(stdout, "Coin (Hex): [ ");
+        for (int i = 0; i < 13u * 4u; i++) {
+          fprintf(stdout, "%02X ", coin_bytes[i]);
+        }
+        fprintf(stdout, "]\n");
+        // Print the hash in hexadecimal
+        fprintf(stdout, "Hash: [ %08X %08X %08X %08X ]\n", h[0], h[1], h[2],
+                h[3]);
+        fprintf(stdout, "\n");
+        // -----------------------------
+
+        save_deti_coin(c);
         n_coins++;
       }
     }
 
-    // Increment the random portion of each lane's coin
-    for (lanes = 0u; lanes < 8u; lanes++) {
+    for (lanes = 0u; lanes < 4u; lanes++) {
       u08_t *bytes = (u08_t *)&coin[13u * lanes];
       for (idx = 10u; idx < n_random_words * 4u && bytes[idx] == (u08_t)126;
            idx++) {
-        bytes[idx] = ' '; // Reset to the first character
+        bytes[idx] = ' ';
       }
       if (idx < n_random_words * 4u) {
         bytes[idx]++;
       }
     }
 
-    n_attempts += 8u; // Increment attempts by 8 (one per lane)
+    n_attempts += 4u;
   }
 
   STORE_DETI_COINS();
