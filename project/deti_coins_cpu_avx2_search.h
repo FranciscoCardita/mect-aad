@@ -2,7 +2,7 @@
 #define DETI_COINS_CPU_AVX2_SEARCH
 
 #include "deti_coins_vault.h"
-#include "md5_cpu_avx2.h" // AVX2 MD5 implementation
+#include "md5_cpu_avx2.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -23,12 +23,12 @@ static void deti_coins_cpu_avx2_search() {
   for (row = 0; row < 13; row++) {
     for (lane = 0; lane < N_LANES; lane++) {
       if (row == 0)
-        interleaved_coins[row * N_LANES + lane] = 0x49544544u; // "DETI"
+        interleaved_coins[row * N_LANES + lane] = 0x49544544u; // "ITED"
       else if (row == 1)
-        interleaved_coins[row * N_LANES + lane] = 0x696F6320u; // " coin"
+        interleaved_coins[row * N_LANES + lane] = 0x696F6320u; // "ioc "
       else if (row == 2)
         interleaved_coins[row * N_LANES + lane] =
-            0x3041206Eu + (lane << 24); // "0A n"
+            0x3041206Eu + (lane << 24); // "A0 n"
       else if (row == 12)
         interleaved_coins[row * N_LANES + lane] = 0x0A202020u; // "\n   "
       else
