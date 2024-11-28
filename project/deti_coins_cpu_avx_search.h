@@ -1,75 +1,80 @@
 #ifndef DETI_COINS_CPU_AVX_SEARCH
 #define DETI_COINS_CPU_AVX_SEARCH
 
-#include "deti_coins_vault.h"
 #include "md5_cpu_avx.h"
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 
 #define N_LANES 4
 
-typedef uint32_t u32_t;
-typedef uint64_t u64_t;
-typedef uint8_t u08_t;
-
 static void deti_coins_cpu_avx_search() {
-  u32_t interleaved_coins[13 * N_LANES] __attribute__((aligned(16)));
-  u32_t interleaved_hashes[4 * N_LANES] __attribute__((aligned(16)));
-  u08_t *bytes[N_LANES];
-  u64_t n_attempts, n_coins, row, idx;
-  u32_t lane, coin[13];
+  {
 
-  for (row = 0; row < 13; row++) {
-    for (lane = 0; lane < N_LANES; lane++) {
-      if (row == 0)
-        interleaved_coins[row * N_LANES + lane] = 0x49544544u; // "ITED"
-      else if (row == 1)
-        interleaved_coins[row * N_LANES + lane] = 0x696F6320u; // "ioc "
-      else if (row == 2)
-        interleaved_coins[row * N_LANES + lane] =
-            0x3041206Eu + (lane << 24); // "0A n"
-      else if (row == 12)
-        interleaved_coins[row * N_LANES + lane] = 0x0A202020u; // "\n   "
-      else
-        interleaved_coins[row * N_LANES + lane] = 0x20202020u; // spaces
-    }
-  }
+    u32_t coins[13][N_LANES] __attribute__((aligned(4 * N_LANES)));
+    u32_t hashes[4][N_LANES] __attribute__((aligned(4 * N_LANES)));
+    union {
+      u32_t coin_as_ints[13];
+      u08_t coin_as_chars[13 * 4 + 1];
+    } coin_template;
+    u32_t n, t, lane, coin[13u], v1, v2;
+    u64_t n_attempts, n_coins;
 
-  for (lane = 0; lane < N_LANES; lane++) {
-    bytes[lane] = (u08_t *)&interleaved_coins[3 * N_LANES + lane];
-  }
-
-  for (n_attempts = n_coins = 0; stop_request == 0; n_attempts += N_LANES) {
-    md5_cpu_avx((v4si *)interleaved_coins, (v4si *)interleaved_hashes);
-
-    for (lane = 0; lane < N_LANES; lane++) {
-      for (row = 0; row < 13; row++) {
-        coin[row] = interleaved_coins[row * N_LANES + lane];
-      }
-
-      if (interleaved_hashes[3 * N_LANES + lane] == 0x00000000) {
-        save_deti_coin(coin);
-        n_coins++;
-      }
+    //
+    // setup
+    //
+    t = (u32_t)time(NULL) % 10000u;
+    if ((n = snprintf((char *)coin_template.coin_as_chars, 53,
+                      "DETI coin 0 [%04u]                                 \n",
+                      t)) != 52) {
+      fprintf(stderr, "not 52 bytes, but %u\n", n);
+      exit(1);
     }
 
     for (lane = 0; lane < N_LANES; lane++) {
-      u08_t *field = bytes[lane];
-      for (idx = 0; idx < 13 * 4 - 1 && field[idx] == (u08_t)126; idx++) {
-        field[idx] = 0x20;
+      for (n = 0; n < 13; n++) {
+        coins[n][lane] = coin_template.coin_as_ints[n];
       }
-      if (idx < 13 * 4 - 1) {
-        field[idx]++;
+      coin_template.coin_as_ints[2] += 1 << 16;
+    }
+
+    //
+    // find DETI coins
+    //
+    v1 = v2 = 0x20202020;
+    for (n_attempts = n_coins = 0ul; stop_request == 0; n_attempts += N_LANES) {
+      next_value_to_try(v1);
+      for (lane = 0; lane < N_LANES; lane++) {
+        coins[11][lane] = v1;
+      }
+
+      if (v1 == 0x20202020) {
+        next_value_to_try(v2);
+        for (lane = 0; lane < N_LANES; lane++) {
+          coins[10][lane] = v2;
+        }
+      }
+
+      md5_cpu_avx((v4si *)coins, (v4si *)hashes);
+
+      for (lane = 0; lane < N_LANES; lane++) {
+        //
+        // check if hash is a DETI coin
+        //
+        if (hashes[3][lane] == 0) {
+
+          for (n = 0; n < 13; n++) {
+            coin[n] = coins[n][lane];
+          }
+          save_deti_coin(coin);
+          n_coins++;
+        }
       }
     }
+    STORE_DETI_COINS();
+    printf("deti_coins_cpu_avx_search: %lu DETI coin%s found in %lu attempt%s "
+           "(expected %.2f coins)\n",
+           n_coins, (n_coins == 1ul) ? "" : "s", n_attempts,
+           (n_attempts == 1ul) ? "" : "s",
+           (double)n_attempts / (double)(1ul << 32));
   }
-
-  STORE_DETI_COINS();
-  printf("deti_coins_cpu_avx_search: %lu DETI coin%s found in %lu attempt%s "
-         "(expected %.2f coins)\n",
-         n_coins, (n_coins == 1ul) ? "" : "s", n_attempts,
-         (n_attempts == 1ul) ? "" : "s", (double)n_attempts / (1ul << 32));
 }
 
 #undef N_LANES
