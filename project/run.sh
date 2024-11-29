@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# WAIT_SECONDS=1800 # 30 minutes
-WAIT_SECONDS=15
+WAIT_SECONDS=1800 # 30 minutes
+# WAIT_SECONDS=15
 
 CUDA_ENABLED=false
 OUTPUT_FILE=""
