@@ -37,7 +37,7 @@ for X in 0 1 2; do
 done
 
 if [ "$CUDA_ENABLED" == true ]; then
-    run_command "./deti_coins_intel -s3 $WAIT_SECONDS 1"
+    run_command "./deti_coins_intel_cuda -s4 $WAIT_SECONDS 1"
 else
     echo "Skipping -s3 (CUDA not enabled)"
 fi
