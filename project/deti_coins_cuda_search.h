@@ -2,11 +2,6 @@
 #ifndef DETI_COINS_CUDA_SEARCH
 #define DETI_COINS_CUDA_SEARCH
 
-// #include "search_utilities.h"
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include "cuda_runtime.h"
-
 static void deti_coins_cuda_search(u32_t n_random_words) {
     u32_t idx, max_idx, random_word, custom_word_1, custom_word_2;
     u64_t n_attempts, n_coins;
