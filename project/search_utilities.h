@@ -14,3 +14,12 @@
       }                                                                        \
     }                                                                          \
   } while (0)
+
+#define random_value_to_try_ascii()                                            \
+  ({                                                                           \
+    u32_t value = 0;                                                           \
+    for (int i = 0; i < 4; i++) {                                              \
+      value |= ((u32_t)(0x20 + (rand() % (0x7E - 0x20 + 1)))) << (i * 8);      \
+    }                                                                          \
+    value;                                                                     \
+  })

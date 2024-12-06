@@ -2,6 +2,11 @@
 #ifndef DETI_COINS_CUDA_SEARCH
 #define DETI_COINS_CUDA_SEARCH
 
+// #include "search_utilities.h"
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include "cuda_runtime.h"
+
 static void deti_coins_cuda_search(u32_t n_random_words) {
     u32_t idx, max_idx, random_word, custom_word_1, custom_word_2;
     u64_t n_attempts, n_coins;
@@ -24,7 +29,7 @@ static void deti_coins_cuda_search(u32_t n_random_words) {
         if (host_data[0] > max_idx) {
             max_idx = host_data[0];
         }
-        for (idx = 1u; idx <= 1024u && idx < host_data[0]; idx += 13u) {
+        for (idx = 1u; idx <= 1024u - 13u && idx < host_data[0]; idx += 13u) {
             if (idx <= 1024u - 13u) {
                 save_deti_coin(&host_data[idx]);
                 n_coins++;
@@ -33,10 +38,10 @@ static void deti_coins_cuda_search(u32_t n_random_words) {
             }
         }
         if (custom_word_1 != 0x7E7E7E7Eu) {
-            custom_word_1 = next_value_to_try(custom_word_1);
+            next_value_to_try(custom_word_1);
         } else {
             custom_word_1 = 0x20202020u;
-            custom_word_2 = next_value_to_try(custom_word_2);
+            next_value_to_try(custom_word_2);
         }
     }
     STORE_DETI_COINS();
