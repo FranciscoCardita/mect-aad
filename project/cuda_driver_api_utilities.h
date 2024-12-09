@@ -145,7 +145,6 @@ static void initialize_cuda(int device_number,const char *cubin_file_name,const 
   // get information about the CUDA device
   //
   CU_CALL( cuDeviceGetName , (device_name,(int)sizeof(device_name) - 1,cu_device) );
-  printf("initialize_cuda: CUDA code running on a %s (device %d)\n",device_name,device_number);
   //
   // create a context
   //

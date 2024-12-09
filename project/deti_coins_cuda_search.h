@@ -42,7 +42,6 @@ static void deti_coins_cuda_search(u32_t n_random_words) {
     STORE_DETI_COINS();
     printf("deti_coins_cuda_search: %lu DETI coin%s found in %lu attempts (expected %.2f coins)\n",
            n_coins, (n_coins == 1ul) ? "" : "s", n_attempts, (double)n_attempts / (double)(1ul << 32));
-    printf("max_idx = %u (%u)\n", max_idx, (max_idx - 1u) / 13u);
     terminate_cuda();
 }
 
