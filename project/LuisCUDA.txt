@@ -1,0 +1,4 @@
+searching for 1800 seconds using deti_coins_cuda_search()
+initialize_cuda: CUDA code running on a NVIDIA GeForce RTX 3050 Laptop GPU (device 0)
+deti_coins_cuda_search: 5279 DETI coins found in 23005925212160 attempts (expected 5356.48 coins)
+max_idx = 27 (2)

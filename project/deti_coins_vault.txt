@@ -1,0 +1,32 @@
+V02:DETI coin &p8gb                                    
+V01:DETI coin k0KG@!                                   
+V00:DETI coin |zB4\!                                   
+V02:DETI coin >:J l!                                   
+V00:DETI coin +u!l""                                   
+V03:DETI coin 2 [6312]                      6   X"Ye   
+V00:DETI coin 2 [6312]                      k   s44-   
+V00:DETI coin 0 [6312]                      ~   Ys|;   
+V02:DETI coin 1 [6312]                      !!  ss]+   
+V00:DETI coin 1 [6312]                      %!  /8:l   
+V01:DETI coin 3 [6312]                      ;!  _?:m   
+V02:DETI coin 2 [6312]                      Q!  CKkX   
+V02:DETI coin 0 [8112]                      "   XY$j   
+V01:DETI coin 5 [8112]                      &   K^|A   
+V01:DETI coin 5 [8112]                      /   +uBf   
+V01:DETI coin 4 [8112]                      1   Dd-S   
+V01:DETI coin 2 [8112]                      6   (,}a   
+V00:DETI coin 4 [8112]                      7   0H>\   
+V02:DETI coin 5 [8112]                      >   `_mx   
+V00:DETI coin 5 [8112]                      R   7sTc   
+V01:DETI coin 2 [8112]                      Y   +MFe   
+V00:DETI coin 3 [8112]                      i   5qm#   
+V02:DETI coin 3 [8112]                      r   \P4(   
+V02:DETI coin 6 [8112]                      ~   h1;j   
+V03:DETI coin 5 [8112]                      $!  gY+-   
+V04:DETI coin 2 [8112]                      %!  ;scX   
+V00:DETI coin 0 [8112]                      /!  )\[}   
+V03:DETI coin 0 [8112]                      8!  V8]p   
+V01:DETI coin 2 [8112]                      8!  _bBq   
+V01:DETI coin 5 [8112]                      :!  Cfqx   
+V00:DETI coin 4 [8112]                      B!  [aM*   
+V01:DETI coin 2 [8112]                      E!  72s8   
